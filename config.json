@@ -1,0 +1,10 @@
+{
+  "redis_address": "127.0.0.1",
+  "redis_port": "6379",
+  "redis_db": "7",
+  "mysqlLocation": "192.168.1.30",
+  "user": "root",
+  "password": "root",
+  "database": "weather",
+  "machine_count": "2"
+}

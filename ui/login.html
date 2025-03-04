@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!--    <link rel="stylesheet" href="css/login.css">-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="js/echarts.js"></script>
+<!--    <script src="js/chart.js"></script>-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/echarts@latest/dist/echarts.min.js"></script>-->
+</head>
+<body>
+<div id="app">
+<!--        账号：<input id="username" type="text"><br>-->
+<!--        密码：<input id="password" type="password"><br>-->
+<!--        <button id="login">登陆</button>-->
+        <div id="login_box" v-if="is_not_login">
+            <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick">
+              <el-tab-pane id="eee" label="登陆" name="login">
+                  <div id="box">
+                      <p>{{tips}}</p>
+                      <b class="nnn">用户名：</b><el-input id="username" v-model="username_login" placeholder="请输入用户名"></el-input><br>
+                      <b class="mmm">密&nbsp;&nbsp;&nbsp;码：</b><el-input id="password" v-model="password_login" placeholder="请输入密码" v-model="input" show-password></el-input><br>
+                      <el-button id="login_button" type="primary" round @click="login">登陆</el-button>
+                  </div>
+              </el-tab-pane>
+              <el-tab-pane label="注册" name="regist">
+                  <div id="box_regist">
+                      <p>{{regist_tips}}</p>
+                      <b class="nnn">用户名：</b><el-input id="username" v-model="username_register" placeholder="请输入用户名"></el-input><br>
+                      <b class="mmm">密&nbsp;&nbsp;&nbsp;码：</b><el-input id="password" v-model="password_register" placeholder="请输入密码" v-model="input"></el-input><br>
+                      <el-button id="login_button" type="primary" round @click="registe">注册</el-button>
+                  </div>
+              </el-tab-pane>
+            </el-tabs>
+    </div>
+        <div id="index" v-if="is_login">
+<!--            <el-tabs v-model="index_activeName" @tab-click="handleClick2">-->
+        <el-tabs v-model="index_activeName">
+                <el-tab-pane label="天气查询" name="weather">
+                <el-card class="box-card weather_class">
+                    <el-form :inline="true" class="demo-form-inline">
+                        <el-form-item label="请输入您将要查询的城市/日期（eg：2024-12-19）">
+                            <el-input v-model="keyword"></el-input>
+                        </el-form-item>
+                        <el-form-item label="查询日期,格式2024-12-19">
+                            <el-input v-model="time"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button class="queryButton" type="primary" @click="queryWeather">查询</el-button>
+                        </el-form-item></br>
+<!--                         <el-form-item>-->
+<!--                             <el-button class="queryButton" type="primary" @click="getDistributedTime">查询分布式部署消耗时间</el-button>-->
+<!--                        </el-form-item>-->
+                          <el-form-item>
+                             <el-button class="queryButton" type="primary" @click="getSimpleTime">查询单机部署消耗时间</el-button>
+                        </el-form-item></br>
+                         <el-form-item>
+                             <el-button class="queryButton" type="primary" @click="getDistributedTime">查询分布式部署消耗时间</el-button>
+                        </el-form-item></br>
+                        <p>分布式时间消耗:{{DistributedTime}}s</p>
+                        <p>单机时间消耗:{{simpleTime}}s</p>
+                    </el-form>
+                    <template v-if="query_data_show">
+                    <el-card class="box-card">
+                      <div class="weather_show">
+                          <div class="first">
+                              <div class="citty"><b>{{todayCity}}</b></div>
+                              <div class="first_content">
+                                  <div class="first_left">
+                                    <div class="first_conent">
+                                      <p class="today">今天:&nbsp;&nbsp;&nbsp;</p><p>{{weather_day}}&nbsp;&nbsp;</p>
+                                        <p>{{weather_night}}&nbsp;&nbsp;</p>
+                                      <p class="temperature">
+                                        {{temperature_night}}°~{{temperature_day}}°C&nbsp;&nbsp;
+                                      </p>
+                                      <p class="wind_direction">
+                                        {{wind_direction}}{{wind_power_num}}级&nbsp;&nbsp;
+                                      </p>
+                                    </div>
+                              </div>
+                                  <div class="first_right">
+                                       <span class="month_day">
+                                          发布时间：{{publish_time}}&nbsp;&nbsp;
+                                      </span>
+                                      <span class="weekday">
+                                          {{weekday}}&nbsp;&nbsp;
+                                      </span>
+                                      <span class="calendar">
+                                          {{lunar}}&nbsp;
+                                      </span>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="second">
+                              <div class="temperature_left"><b>{{temperature}}°</b></div>
+                              <div class="rifht_data">
+                                  <div class="up">
+                                    <div class="pm_25">
+                                      pm2.5:&nbsp;{{ps_pm25}}&nbsp;&nbsp;{{ps_pm25_level}}
+                                    </div>
+                                  </div>
+                                  <div class="down">
+                                       {{weather}}&nbsp;&nbsp;
+                                       {{wind_direction}}&nbsp;&nbsp;
+                                       {{wind_power_num}}级
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="three">
+                              <p>湿度{{humidity}}%&nbsp;&nbsp;日出&nbsp;{{sunriseTime}}&nbsp;&nbsp;日落&nbsp;{{sunsetTime}}</p>
+                          </div>
+                      </div>
+                    </el-card>
+                        <div ref="echartsDom" style="width: 100%; height: 400px;" class="four" id="main">
+                        </div>
+                        <div class="next">
+                             <el-button class="up" type="primary" @click="upPage" :disabled="current_page == 1">上一页</el-button>
+                             <el-button class="down" type="primary" @click="downPage" :disabled="current_page == 3">下一页</el-button>
+                        </div>
+                    </template>
+                </el-card>
+        </el-tab-pane>
+                <el-tab-pane label="城市简介" name="city">
+                    <el-card class="city_introduction">
+                        <el-card class="box-card">
+                          <div slot="header" class="clearfix">
+                            <span>武汉市</span>
+                            <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
+                          </div>
+                          <div class="city_content">
+                              <img class="first_img" src="imgs/w-1.png">
+                              <img class="first_img" src="imgs/w-2.png">
+                              <img class="first_img" src="imgs/w-3.png">
+                              <img class="first_img" src="imgs/w-4.png">
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;武汉市，简称“汉”，别称江城，湖北省辖地级市、省会，副省级市、超大城市 [188]、国家中心城市 [215]，中华人民共和国国务院批复确定的中国中部地区的中心城市，全国重要的工业基地、科教基地和综合交通枢纽 [1]，中国人民解放军联勤保障部队机关驻地 [195]。全市下辖13个区，总面积8569.15平方千米。截至2023年末，常住人口1377.40万人，全年地区生产总值20011.65亿元 [216-217]。</p></br>
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;武汉市地处江汉平原东部、长江中游，长江及其最大支流汉水在此交汇，形成武汉三镇（武昌、汉口、汉阳）隔江鼎立的格局，市内江河纵横、湖港交织，水域面积占全市总面积四分之一，被评为国际湿地城市。作为中国经济地理中心，武汉素有“九省通衢”之称，是中国内陆最大的水陆空交通枢纽、长江中游航运中心，其高铁网辐射大半个中国，可直航全球五大洲 [175-177]。</p></br>
+                              <a href="#" @click="query('武汉市')">查看天气</a>
+                          </div>
+                        </el-card>
+                        <el-card class="box-card">
+                          <div slot="header" class="clearfix">
+                            <span>黄冈市</span>
+                            <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
+                          </div>
+                           <div class="city_content">
+                               <img src="imgs/H3.png">
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;黄冈市，古称黄州，湖北省辖地级市，介于东经114°24′—116°07′、北纬29°45′—31°40′，地处鄂东、大别山南麓、长江中游北岸，京九铁路中段，为鄂、豫、皖、赣四省交界，与武汉市山水相连；地势自北向南逐渐倾斜，东北部与豫皖交界为大别山脉 [1] [4]；截至2024年，全市共辖1个市辖区、7个县，代管2个县级市，总面积17457.20平方千米 [1] [4]；截至2023年年末，黄冈市常住人口579.22万人。</p></br>
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;黄冈市地处南北气候过渡带，属于亚热带季风气候。 [70]黄冈市在旧石器时代即有人类居住，自东晋以后，形成大体完整的郡州。明代以后，蕲州归属黄州府管辖，黄州成为区域唯一的政治中心。1995年12月23日，经国务院批准设立地级黄冈市，治所驻黄州。</p></br>
+                              <a href="#" @click="query('黄冈市')">查看天气</a>
+                          </div>
+                        </el-card>
+                                  <el-card class="box-card">
+                          <div slot="header" class="clearfix">
+                            <span>黄石市</span>
+                            <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
+                          </div>
+                          <div class="city_content">
+                              <img src="imgs/H4.png">
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;黄石市（英文名：Huangshi City），湖北省辖地级市，位于湖北省东南部，长江中游南岸 [96]，总面积4583平方公里 [95]。截至2023年7月，黄石市辖4个区、1个县，代管1个县级市。 [96]市人民政府驻下陆区杭州东路1号。 [83] [191-192]2023年年末，黄石市常住人口243.95万人 [82]，方言主要分两大类：赣方言、江淮官话。 [188]</p></br>
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;黄石市为典型的亚热带季风气候 [105] [213]，地形总的趋势是西南高，东北低 [99]，长江自北向东流过市境 [104]。西周时，称鄂；春秋战国，属楚、秦。 [91]宋乾德五年（967年），南唐始建大冶县。自宋至民国，隶属兴国路、兴国州、武昌府、大冶县。 [92]1949年，设立中国第一个工矿特区——“湖北省大冶工矿特区”。 [94]1950年，成立省辖黄石市 [92]。</p></br>
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;黄石市是鄂东南地区水陆交通枢纽，湖北省有重要影响的区域性经济中心，长江中游重要的工业基地之一、鄂东地区中心城市 [9]，也是中国中部地区重要的老工业基地和国务院批准的沿江开放城市之一，被定位为长江中游城市群区域性中心城市、先进制造业基地。 [8] [96]也是全国资源枯竭转型试点城市，被誉为“青铜古都”“钢铁摇篮”“水泥故乡”“服装新市”“劲酒之都”。 [95]清光绪十六年（1890年），张之洞开办“汉冶萍公司”，黄石成为中国近代民族工业的摇篮。 [15]2023年，黄石市GDP2108.96亿元，同比增长6.8%，三次产业结构为6.7：45.2：48.1。</p></br>
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;黄石市是中华青铜文化的发祥地之一 [94]，在矿冶文化发展史中形成了以矿冶业为主体的工业文明。 [3]截至2023年9月，黄石市有全国重点文物保护单位8处 [110]，人类非遗1项 [17]，国家级非物质文化遗产4项 [205-206]。</p></br>
+                              <a href="#" @click="query('黄石市')">查看天气</a>
+                          </div>
+                        </el-card>
+                                  <el-card class="box-card">
+                          <div slot="header" class="clearfix">
+                            <span>宜昌市</span>
+                            <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
+                          </div>
+                          <div class="city_content">
+                              <img src="imgs/yc.png">
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;宜昌市，湖北省辖地级市，位于湖北省西南部，长江中上游分界处，地形比较复杂，高低相差悬殊，地处湖北西南部、长江上游和中游的分界处，属亚热带季风性湿润气候，四季分明，水热同季，寒旱同季，面积2.1万平方千米。 [119]截至2023年末，宜昌市辖5个市辖区、3个县、2个自治县，代管3个县级市。 [2]截至2023年末，宜昌市常住人口392.40万人。 [127]</p></br>
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;宜昌古称“夷陵”，因“水至此而夷、山至此而陵”得名。清朝时改称“宜昌”，取“宜于昌盛”之意。宜昌历史悠久，巴楚文化源远流长，是世界历史文化名人屈原、古代民族团结使者王昭君的故里。宜昌市是湖北省重要的综合交通枢纽，境内宜昌三峡国际机场是国家航空一类口岸 [115]、鄂西渝东国际门户机场；宜昌东站是“四纵四横”沪汉蓉铁路节点车站；宜昌北站是“八纵八横”沿江高铁和呼南高铁枢纽车站；宜昌BRT是全国单条线路最长、车站最多的快速公交系统。</p></br>
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;宜昌古称“夷陵”，因“水至此而夷、山至此而陵”得名。清朝时改称“宜昌”，取“宜于昌盛”之意。宜昌历史悠久，巴楚文化源远流长，是世界历史文化名人屈原、古代民族团结使者王昭君的故里。宜昌市是湖北省重要的综合交通枢纽，境内宜昌三峡国际机场是国家航空一类口岸 [115]、鄂西渝东国际门户机场；宜昌东站是“四纵四横”沪汉蓉铁路节点车站；宜昌北站是“八纵八横”沿江高铁和呼南高铁枢纽车站；宜昌BRT是全国单条线路最长、车站最多的快速公交系统。</p></br>
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;宜昌是省域副中心城市、长江中游城市群重要成员、宜荆荆都市圈核心成员，是三峡工程、葛洲坝水利枢纽工程所在地，被誉为“世界水电之都”。 [119]宜昌连续四届入选全国文明城市，是国务院批复确定的中部地区区域性中心城市、三线城市。宜昌拥有水电站四百余座，是嫘祖、杨守敬等历史名人的故里；是中国优秀旅游城市。有众多历史文化古迹和风景名胜。</p></br>
+                              <a href="#" @click="query('宜昌市')">查看天气</a>
+                          </div>
+                        </el-card>
+                        <el-card class="box-card">
+                          <div slot="header" class="clearfix">
+                            <span>荆州市</span>
+                            <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
+                          </div>
+                            <div class="city_content">
+                                <img src="imgs/jz.png">
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;荆州市（Jingzhou [174]），古称江陵、郢都、南郡，湖北省辖地级市， [98]位于湖北省中南部、长江中游、江汉平原腹地。东依武汉市汉南区；南滨江与湖南省岳阳市为邻，与益阳市、常德市接壤；西连宜昌市的当阳市、枝江市、宜都市、五峰县，北接荆门市、潜江市、仙桃市，总面积1.41万平方千米。 [1] [26]2023年，全市常住人口513.55万人， [102]辖2区2县4市。 [5]市内方言属西南官话常鹤片。 [141]</p></br>
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;荆州属北亚热带季风湿润气候区，四季分明、热量丰富、光照适宜、雨水充沛、雨热同季、无霜期长。境内河湖众多，水网密布，地势西高东低，由低山丘陵向岗地、平原逐渐过渡。 [26]距今约5万～1万年前，原始人类已在荆州地区生活。 [2]春秋战国时，楚文王元年（前689年），楚国迁都于郢（今荆州区纪南城）。 [2]秦统一全国（前221年）后，属南郡。 [128]元至正二十四年（1364年），改置荆州府，改属湖广行省。清康熙九年（1670年）置上荆南道，民国元年（1911年）属荆宜道，1949年7月成立荆州行政区督察专员公署。1994年9月，撤销荆州地区、沙市市和江陵县，设立荆沙市。1996年11月，荆沙市更名为荆州市。</p></br>
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;荆州位于长江经济带和二广轴线核心交叉点， [142]素有“鱼米之乡”“中国粮仓”的美誉，是国家重要农产品综合生产基地、优质农副产品生产基地和湖北省优势农业资源核心区。 [1]2023年，全市地区生产总值3151.49亿元，三次产业结构比重为19.3:34.4:46.3。</p></br>
+                              <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;荆州自古以来就是长江中游的文化中心，是楚文化发祥地、三国文化荟萃地、红色文化富集地、长江文化展示地。</p></br>
+                              <a href="#" @click="query('荆州市')">查看天气</a>
+                          </div>
+                        </el-card>
+                    </el-card>
+                </el-tab-pane>
+            </el-tabs>
+        </div>
+    </div>
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                isRouterAlive: true,
+                url: 'http://127.0.0.1:5000',
+                is_not_login: false,
+                is_login: true,
+                username_login: "",
+                password_login: "",
+                username_register: "",
+                password_register: "",
+                tips: "",
+                regist_tips: "",
+                activeName: 'login',
+                index_activeName: "weather",
+                current_city: '',
+                keyword: '',
+                date_array: [],
+                lowest_array: [],
+                highest_array: [],
+                query_data_show: false,
+                current_page: 1,
+                currentCity: "",
+                timer: null,
+                todayCity: '',
+                weather_day: '',
+                weather_night: '',
+                temperature: "",
+                temperature_night: "",
+                temperature_day: '',
+                wind_direction: "",
+                weather: "",
+                wind_power_num: "",
+                ps_pm25_level:'',
+                ps_pm25: '',
+                publish_time: '',
+                weekday: '',
+                lunar: '',
+                humidity: '',
+                sunriseTime: '',
+                sunsetTime: '',
+                time: "",
+                DistributedTime: "",
+                simpleTime: ""
+            }
+        },
+        methods: {
+            getSimpleTime(){
+                that = this
+                axios.get(this.url + '/getSimpleTime',{headers: {"Access-Control-Allow-Origin": "*"}},)
+                .then(function (response) {
+                    if (response.status == 200) {
+                        that.simpleTime = response.data
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            },
+            getDistributedTime(){
+                that = this
+                axios.get(this.url + '/getDistributedTime',{headers: {"Access-Control-Allow-Origin": "*"}},)
+                .then(function (response) {
+                    if (response.status == 200) {
+                        that.DistributedTime = response.data
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            },
+            //上一页
+            upPage(){
+                that = this
+                that.current_page -= 1
+                const min = (that.current_page -1) * 10
+                const max = that.current_page * 10
+                const datearray = that.date_array.filter((_,index)=>index >=min && index <=max)
+                const lowest_array = that.lowest_array.filter((_,index)=>index >=min && index <=max)
+                const highest_array = that.highest_array.filter((_,index)=>index >=min && index <=max)
+                that.initECharts(datearray,lowest_array,highest_array)
+                console.log("查询天气")
+            },
+            //下一页
+            downPage(){
+                that = this
+                that.current_page += 1
+                const min = (that.current_page -1) * 10
+                const max = that.current_page * 10
+                const datearray = that.date_array.filter((_,index)=>index >=min && index <=max)
+                const lowest_array = that.lowest_array.filter((_,index)=>index >=min && index <=max)
+                const highest_array = that.highest_array.filter((_,index)=>index >=min && index <=max)
+                that.initECharts(datearray,lowest_array,highest_array)
+                console.log("查询天气")
+            },
+            handleClick(tab, event) {
+                console.log(tab.label);
+                if (tab.label == '登陆'){
+                    this.username_login = ""
+                    this.password_login = ""
+                    this.tips = ""
+                    this.activeName = 'login'
+                }
+                if (tab.label == '注册'){
+                    this.username_register = ""
+                    this.password_register = ""
+                    this.regist_tips = ""
+                    this.activeName = 'regist'
+                }
+                },
+            //登陆
+            login(){
+                that = this
+                console.log(this.username_login);
+                data = {
+                    username: this.username_login,
+                    password: this.password_login
+                }
+                axios.post(this.url + '/login',data,{headers: {"Access-Control-Allow-Origin": "*"}},)
+                .then(function (response) {
+                    if (response.status == 200) {
+                        if (response.data == "0"){
+                            console.log("用户不存在或者密码错误")
+                            that.tips = "用户不存在或者密码错误"
+                        } else  {
+                            console.log("登陆成功")
+                            //切换成首页
+                            that.is_not_login = false
+                            that.is_login = true
+                        }
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+                console.log("登陆")
+            },
+            //注册
+            registe(){
+                that = this
+                console.log(this.username_login);
+                login_data = {
+                    username: this.username_register,
+                    password: this.password_register
+                }
+                axios.post(this.url + '/register',login_data,{headers: {"Access-Control-Allow-Origin": "*"}},)
+                .then(function (response) {
+                    if (response.status == 200) {
+                        if (response.data == 'ok')
+                            that.regist_tips = "注册成功"
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+                console.log("注册")
+            },
+            query(city){
+                this.index_activeName = "weather"
+                this.keyword = city
+                this.queryWeather(this.keyword)
+            },
+            /*首页*/
+            //异步查询天气
+            async queryWeather(city){
+                that = this
+                keyword = ""
+                if (that.keyword.length == 0){
+                    console.log(that.current_city);
+                    keyword = city
+                } else{
+                    keyword = that.keyword
+                }
+                try{
+                    that.current_page = 1
+                    console.log(this.keyword);
+                    query_data = {
+                        city: keyword,
+                        date: this.time
+                    }
+                    const response = await axios.post(this.url + '/query_weather',query_data,{headers: {"Access-Control-Allow-Origin": "*"}},)
+                    if (response.status == 200) {
+                        //获取今天天气
+                       weather_day = response.data.weather.weather_day
+                       that.weather_day = weather_day
+                       that.todayCity = keyword
+                       that.weather_night = response.data.weather.weather_night
+                       that.temperature = response.data.weather.temperature
+                       that.wind_direction = response.data.weather.wind_direction
+                       that.weather = response.data.weather.weather
+                       that.wind_power_num = response.data.weather.wind_power_num
+                       that.ps_pm25_level = response.data.ps_pm25.level
+                       that.ps_pm25 = response.data.ps_pm25.ps_pm25
+                       that.publish_time = response.data.weather.publish_time
+                       that.weekday = response.data.base.weekday
+                       that.lunar = response.data.base.lunar
+                        that.humidity = response.data.weather.humidity
+                        that.sunriseTime = response.data.feature.sunriseTime
+                        that.sunsetTime = response.data.feature.sunsetTime
+                       console.log(that.publish_time);
+                       wether_data = response.data.long_day_forecast
+                       wether_data_list = response.data.long_day_forecast.info
+                       var i = 0
+                        for (let i = 0; i < wether_data_list.length; i++) {
+                            if (i==0){
+                                const dd = wether_data_list[i]
+                                that.temperature_night = dd.temperature_night
+                                that.temperature_day = dd.temperature_day
+                            }
+                            if (i == 30){
+                                break
+                            }
+                            console.log(wether_data_list[i]);
+                            const da = wether_data_list[i]
+                            const date = da.date
+                            that.date_array.push(date)
+                            that.lowest_array.push(da.temperature_night)
+                            that.highest_array.push(da.temperature_day)
+                            //获取日期
+                        }
+                        that.query_data_show = true
+                    }
+                    this.$nextTick(()=>{
+                        const datearray = that.date_array.filter((_,index)=>index >=0 && index <=9)
+                        const lowest_array = that.lowest_array.filter((_,index)=>index >=0 && index <=9)
+                        const highest_array = that.highest_array.filter((_,index)=>index >=0 && index <=9)
+                        that.initECharts(datearray,lowest_array,highest_array,keyword)
+                        console.log("查询天气")
+                    })
+                } catch (e) {
+                    console.log(e);
+                }
+                
+            },
+            //渲染图表
+            initECharts(date_array,lowest_array,highest_array,keyword){
+                 const echarts = window.echarts; // 获取ECharts
+                 const chartDom = this.$refs.echartsDom; // 获取DOM元素
+                 const myChart = echarts.init(chartDom); // 初始化ECharts实例
+                 option = {
+                  title: {
+                    text: keyword + '30天天气预报'
+                  },
+                  tooltip: {
+                    trigger: 'axis'
+                  },
+                  legend: {},
+                  toolbox: {
+                    show: true,
+                    feature: {
+                      dataZoom: {
+                        yAxisIndex: 'none'
+                      },
+                      dataView: { readOnly: false },
+                      magicType: { type: ['line', 'bar'] },
+                      restore: {},
+                      saveAsImage: {}
+                    }
+                  },
+                  xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: date_array
+                  },
+                  yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                      // formatter: '{value} °C'
+                      formatter: '{value} °C'
+                    }
+                  },
+                  series: [
+                    {
+                      name: 'Highest',
+                      type: 'line',
+                      data: highest_array,
+                      markPoint: {
+                        data: [
+                          { type: 'max', name: 'Max' },
+                          { type: 'min', name: 'Min' }
+                        ]
+                      },
+                      markLine: {
+                        data: [{ type: 'average', name: 'Avg' }]
+                      }
+                    },
+                    {
+                      name: 'Lowest',
+                      type: 'line',
+                      data: lowest_array,
+                      markPoint: {
+                        data: []
+                      },
+                      markLine: {
+                        data: [
+                          { type: 'average', name: 'Avg' },
+                          [
+                            {
+                              symbol: 'none',
+                              x: '80%',
+                              yAxis: 'max'
+                            },
+                            {
+                              symbol: 'circle',
+                              label: {
+                                position: 'start',
+                                formatter: 'Max'
+                              },
+                              type: 'max',
+                              name: '最高点'
+                            }
+                          ]
+                        ]
+                      }
+                    }
+                  ]
+                };
+                option && myChart.setOption(option);
+            },
+            //获取当前城市
+            async getWether(){
+                that = this
+                //获取当前城市
+                const resp = await axios.get(this.url + '/getCity',{headers: {"Access-Control-Allow-Origin": "*"}},)
+                if (resp.status == 200) {
+                   this.$nextTick(()=>{
+                       that.currentCity = resp.data;
+                       that.keyword = ''
+                       that.todayCity = resp.data
+                       that.queryWeather(resp.data)
+                   })
+
+                }
+            },
+        },
+        mounted() {
+            this.getWether()
+            //定时任务查询天气 10分钟查询一次
+            this.timer = setInterval(this.getWether, 1000 * 60 * 10);
+        },
+          beforeDestroy() {
+            // 清除定时器
+            if (this.timer) {
+              clearInterval(this.timer);
+            }
+          }
+    })
+
+</script>
+<style>
+    /* 应用于整个页面的CSS规则 */
+    body {
+        /* 设置背景图片，替换'url'为您的图片地址 */
+        background-image: url('login-background.f9f49138.jpg');
+
+        /* 确保背景图片覆盖整个页面，可以设置为全屏 */
+        background-size: cover;
+
+        /* 背景图片不会随着内容滚动 */
+        background-attachment: fixed;
+
+        /* 设置背景图片不重复 */
+        background-repeat: no-repeat;
+
+        /* 设置背景图片固定在视口的底部，不随滚动条滚动 */
+        background-position: bottom;
+    }
+    * {
+    margin: 0;
+    padding: 0;
+}
+    div#login_box {
+        position: absolute;
+        left: 1001px;
+        top: 421px;
+        /*background-color: red !important;*/
+        width: 616px !important;
+        height: 370px !important;
+}
+    .el-input__inner {
+        width: 400px !important;
+    }
+    #username {
+        margin-top: 40px;
+        position: relative;
+        left: 70px;
+    }
+    .nnn {
+        position: relative;
+        left: 55px;
+    }
+    #password {
+         margin-top: 40px;
+            position: relative;
+            left: 70px;
+    }
+    .mmm {
+        position: relative;
+        left: 55px;
+    }
+
+    .el-input {
+        width: 200px;
+       display: inline-block; /* 或者 inline */
+      /* 其他样式 */
+    }
+    .eee {
+        position: relative;
+    }
+    .box {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+    }
+    .el-button {
+        position: relative;
+        top: 20px;
+        left: 254px;
+        margin-bottom: 40px;
+}
+    .el-input__suffix {
+    height: 100%;
+    right: 5px;
+    transition: all .3s;
+    pointer-events: none;
+    position: absolute;
+    left: 439px;
+    top: 20px;
+}
+    /*city*/
+    .first_img {
+       margin-left: 107px;
+    }
+    .city_introduction {
+        /*height: 1080px;*/
+    }
+    .city_introduction .tt {
+        /*background-color: red;*/
+        height: 200px;
+    }
+    .tt .city_title {
+        font-size: 30px;
+        margin-bottom: 20px;
+    }
+    /* -------------------------------------------------- */
+    .queryButton{
+        position: relative;
+        left: 206px;
+        top: 4px;
+    }
+      .text {
+    font-size: 14px;
+  }
+
+  .item {
+    padding: 18px 0;
+  }
+  .weather_class {
+    height: 1080px;
+  }
+  .weather_show {
+      width: 1000px;
+      /*background-color: red;*/
+      margin: 0 auto;
+  }
+  .weather_show .first {
+      height: 100px;
+      /*background-color: #40FF4C;*/
+  }
+    .first_left {
+        float: left;
+    }
+    .first_right {
+        float: right;
+    }
+    .citty {
+        float: left;
+        width: 180px;
+        font-size: 30px;
+    }
+    .first_content {
+        position: relative;
+        top: 11px;
+        float: right;
+        width: 820px;
+    }
+    .first_conent {
+        float: right;
+    }
+    .first_conent p{
+        float: left;
+    }
+    .second {
+        height: 100px;
+    }
+    .second .temperature_left {
+        float: left;
+        width: 180px;
+        font-size: 80px;
+    }
+    .second .rifht_data {
+        float: left;
+        width: 820px;
+        position: relative;
+        top: 45px;
+        font-size: 20px;
+    }
+    .three {
+        margin-top: 20px;
+    }
+    .three p{
+        position: relative;
+        /*left: -73px;*/
+    }
+    .four {
+        margin-top: 20px;
+        /*background-color: #5e6e7a;*/
+        height: 900px;
+    }
+    .next .up {
+        display: inline-block;
+        float: left;
+    }
+    .next .down {
+        display: inline-block;
+    }
+    .el-tabs__item {
+    padding: 0 20px;
+    height: 40px;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    line-height: 40px;
+    display: inline-block;
+    list-style: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #303133;
+    position: relative;
+    font-size: 30px;
+    color: white;
+}
+</style>
+</html>
